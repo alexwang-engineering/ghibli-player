@@ -1,5 +1,7 @@
 # GhibliPlayer
 
+> 🚧 **Work in progress** — under active development, not feature-complete. Feedback and review welcome via the open draft PR.
+
 A Ghibli-themed macOS video player app with real-photo character companions, plus a companion Chrome extension for detecting and downloading video sources.
 
 ## Structure
