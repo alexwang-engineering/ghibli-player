@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Ghibli 视频下载器</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-leaves">
+      <span>🍃</span><span>🍃</span><span>🌿</span>
+    </div>
+    <h1>🌿 视频捕获器</h1>
+    <p>Ghibli Video Downloader</p>
+    <button id="refreshBtn" class="refresh-btn">↺ 刷新</button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <span id="videoCount" class="count">扫描中…</span>
+    <div class="filters">
+      <button id="filterAll"    class="filter-btn active">全部</button>
+      <button id="filterStream" class="filter-btn">流媒体</button>
+      <button id="filterDirect" class="filter-btn">直链</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="loading show">
+    <div class="spinner">🌱</div>
+    <span>正在寻找视频…</span>
+  </div>
+
+  <!-- Empty state -->
+  <div id="emptyState" class="empty-state">
+    <div class="empty-icon">🦙</div>
+    <div class="empty-title">此页面暂未发现视频</div>
+    <div class="empty-hint">
+      请先播放网页上的视频，<br>
+      然后点击右上角「刷新」按钮重新扫描。
+    </div>
+  </div>
+
+  <!-- Video list -->
+  <div id="videoList" class="video-list"></div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宫崎骏风格播放器 🌿</title>
+  <style>
+    :root {
+      --sky-top: #5BA3C9;
+      --sky-mid: #89C4DC;
+      --sky-low: #B8DDE9;
+      --hill-far: #7AAF65;
+      --hill-mid: #4F8C42;
+      --forest: #2A5C2E;
+      --forest-dark: #1A3D1C;
+      --cream: #FFF8E7;
+      --warm-paper: #F5EDD8;
+      --tan: #D4B896;
+      --wood: #8B6914;
+      --wood-light: #C49A3C;
+      --brown-dark: #4A3728;
+      --brown-deep: #2C1810;
+      --accent: #E0734A;
+      --text: #2C1810;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', serif;
+      color: var(--text);
+      background: var(--sky-top);
+    }
+
+    /* ── Sky gradient ── */
+    .scene {
+      position: fixed; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        var(--sky-top)   0%,
+        var(--sky-mid)  38%,
+        var(--sky-low)  55%,
+        var(--hill-far) 68%,
+        var(--hill-mid) 78%,
+        var(--forest)   88%,
+        var(--forest-dark) 100%
+      );
+    }
+
+    /* ── Clouds ── */
+    .clouds { position: absolute; top: 0; left: 0; width: 200%; height: 55%; pointer-events: none; }
+    .cloud {
+      position: absolute;
+      background: rgba(255,255,255,0.88);
+      border-radius: 60px;
+      filter: blur(1px);
+      animation: drift linear infinite;
+    }
+    .cloud::before, .cloud::after {
+      content: ''; position: absolute;
+      background: rgba(255,255,255,0.88);
+      border-radius: 50%;
+    }
+    .c1 { width:140px;height:38px; top:7%; left:5%;  animation-duration:80s; }
+    .c1::before { width:70px;height:58px; top:-30px; left:22px; }
+    .c1::after  { width:48px;height:40px; top:-18px; left:68px; }
+    .c2 { width:100px;height:28px; top:19%; left:30%; animation-duration:110s; animation-delay:-40s; }
+    .c2::before { width:55px;height:44px; top:-22px; left:12px; }
+    .c2::after  { width:36px;height:30px; top:-12px; left:50px; }
+    .c3 { width:170px;height:44px; top:11%; left:60%; animation-duration:95s; animation-delay:-20s; }
+    .c3::before { width:80px;height:62px; top:-32px; left:35px; }
+    .c3::after  { width:55px;height:44px; top:-20px; left:90px; }
+    .c4 { width:80px; height:22px; top:25%; left:75%; animation-duration:130s; animation-delay:-60s; }
+    .c4::before { width:42px;height:34px; top:-17px; left:8px; }
+    .c4::after  { width:28px;height:24px; top:-10px; left:40px; }
+    @keyframes drift {
+      from { transform: translateX(-400px); }
+      to   { transform: translateX(100vw); }
+    }
+
+    /* ── Hills SVG ── */
+    .hills { position: absolute; bottom: 0; left: 0; width: 100%; height: 42%; pointer-events: none; }
+
+    /* ── Fireflies ── */
+    .firefly {
+      position: absolute; width: 3px; height: 3px;
+      background: radial-gradient(circle, #ffffaa, #ffff55);
+      border-radius: 50%;
+      box-shadow: 0 0 6px 3px rgba(255,255,170,0.6);
+      animation: ff ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes ff {
+      0%,100%{ opacity:0; transform:translate(0,0) scale(1); }
+      20%    { opacity:1; transform:translate(8px,-12px) scale(1.2); }
+      50%    { opacity:0.5; transform:translate(-6px,-22px) scale(0.8); }
+      80%    { opacity:1; transform:translate(-10px,-8px) scale(1.1); }
+    }
+
+    /* ── Totoro silhouette decoration ── */
+    .totoro-deco {
+      position: absolute; bottom: 28%; right: 3%;
+      width: 60px; opacity: 0.15; pointer-events: none;
+      animation: totoro-breathe 4s ease-in-out infinite;
+    }
+    @keyframes totoro-breathe {
+      0%,100%{ transform: scaleY(1); }
+      50%    { transform: scaleY(1.03); }
+    }
+
+    /* ── Player container ── */
+    .player-wrap {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -52%);
+      width: min(92vw, 920px);
+      z-index: 20;
+      filter: drop-shadow(0 24px 48px rgba(0,0,0,0.45));
+    }
+
+    .player-title {
+      text-align: center;
+      color: rgba(255,255,255,0.95);
+      font-size: 1.05em;
+      letter-spacing: 0.18em;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.35), 0 0 30px rgba(100,200,120,0.2);
+      margin-bottom: 10px;
+      user-select: none;
+    }
+
+    /* Wooden frame */
+    .frame {
+      background: linear-gradient(145deg, #8B5E2A, #6B4419, #7A5225, #5A3810);
+      border-radius: 18px;
+      padding: 9px 9px 0;
+      box-shadow:
+        inset 0 2px 4px rgba(255,200,100,0.15),
+        inset 0 -3px 6px rgba(0,0,0,0.35),
+        0 0 0 1px rgba(255,180,60,0.12);
+      border: 1px solid rgba(180,120,50,0.4);
+    }
+
+    /* Film grain texture on frame */
+    .frame::before {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 18px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Video area */
+    .video-box {
+      position: relative;
+      background: #0a0a0a;
+      border-radius: 10px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+    }
+
+    video {
+      width: 100%; height: 100%;
+      display: block; object-fit: contain;
+    }
+
+    /* Drop / empty overlay */
+    .drop-overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px;
+      background: linear-gradient(135deg, rgba(20,40,20,0.88), rgba(10,20,10,0.92));
+      color: rgba(255,255,255,0.88);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .drop-overlay.drag-over {
+      background: linear-gradient(135deg, rgba(50,120,50,0.8), rgba(30,80,40,0.88));
+    }
+    .drop-overlay.hidden { display: none; }
+
+    .drop-icon {
+      font-size: 3.5em;
+      animation: leaf-float 3.5s ease-in-out infinite;
+    }
+    @keyframes leaf-float {
+      0%,100%{ transform: translateY(0) rotate(-5deg); }
+      50%    { transform: translateY(-10px) rotate(5deg); }
+    }
+    .drop-main { font-size: 1.05em; font-weight: 500; }
+    .drop-sub  { font-size: 0.78em; opacity: 0.65; }
+
+    /* URL input row */
+    .url-row {
+      display: flex; gap: 6px; padding: 0 4px;
+      margin-top: 6px; margin-bottom: 2px;
+    }
+    .url-input {
+      flex: 1;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.9);
+      font-size: 0.78em;
+      padding: 6px 10px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .url-input::placeholder { color: rgba(255,255,255,0.35); }
+    .url-input:focus { border-color: rgba(150,220,100,0.5); }
+    .url-go {
+      background: rgba(74,124,63,0.7);
+      border: none; border-radius: 8px;
+      color: #fff; font-size: 0.78em;
+      padding: 6px 12px; cursor: pointer;
+      transition: background 0.2s;
+    }
+    .url-go:hover { background: rgba(74,124,63,1); }
+
+    /* Controls */
+    .controls {
+      background: linear-gradient(to bottom, rgba(20,12,5,0.9), rgba(30,16,6,0.96));
+      padding: 8px 14px 11px;
+      border-radius: 0 0 10px 10px;
+      display: flex; flex-direction: column; gap: 7px;
+    }
+
+    /* Progress */
+    .progress-row { display: flex; align-items: center; gap: 10px; }
+
+    .prog-track {
+      flex: 1; height: 5px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 3px; cursor: pointer;
+      position: relative; overflow: visible;
+    }
+    .prog-track:hover { height: 7px; margin-top: -1px; }
+
+    .prog-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(to right, #5F9B47, #9ACC7A);
+      border-radius: 3px;
+      position: relative;
+      transition: width 0.05s linear;
+    }
+    .prog-thumb {
+      position: absolute; right: -7px; top: 50%;
+      transform: translateY(-50%);
+      width: 15px; height: 15px;
+      background: var(--cream);
+      border-radius: 50%;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.5);
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .prog-track:hover .prog-thumb { opacity: 1; }
+
+    .time-label {
+      font-size: 0.7em;
+      color: var(--tan);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      min-width: 96px;
+      text-align: right;
+    }
+
+    /* Buttons row */
+    .btn-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .btn {
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,0.85);
+      padding: 5px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.18s, transform 0.12s, color 0.18s;
+      font-size: 1em; line-height: 1;
+    }
+    .btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .btn:active { transform: scale(0.92); }
+
+    .btn-play {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, #4F8C42, #3A6B30);
+      color: #fff; font-size: 1.1em;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+    .btn-play:hover { background: linear-gradient(135deg, #5F9B50, #4A7C3F); }
+
+    .skip-label { font-size: 0.62em; font-weight: 600; letter-spacing: -0.02em; }
+
+    .vol-wrap { display: flex; align-items: center; gap: 5px; }
+    .vol-slider {
+      -webkit-appearance: none;
+      width: 68px; height: 4px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 2px; outline: none; cursor: pointer;
+    }
+    .vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px; height: 13px;
+      background: var(--cream); border-radius: 50%;
+      cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+
+    .spacer { flex: 1; }
+
+    .speed-select {
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.85); font-size: 0.7em;
+      padding: 3px 6px; border-radius: 6px; cursor: pointer; outline: none;
+    }
+    .speed-select option { background: #2C1810; }
+
+    .file-btn {
+      font-size: 0.7em; color: var(--tan);
+      padding: 4px 10px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 8px;
+    }
+
+    .fs-btn { font-size: 1.2em; }
+
+    /* Keyboard hint */
+    .kbd-hint {
+      text-align: center;
+      font-size: 0.6em;
+      color: rgba(255,255,255,0.25);
+      padding-bottom: 3px;
+      letter-spacing: 0.05em;
+      user-select: none;
+    }
+
+    /* Loading bar */
+    .loading-bar {
+      height: 3px; width: 0%; background: #9ACC7A;
+      border-radius: 2px; margin-top: 2px;
+      transition: width 0.3s, opacity 0.5s;
+      opacity: 0;
+    }
+    .loading-bar.active { opacity: 1; animation: load-pulse 1.2s ease infinite; }
+    @keyframes load-pulse {
+      0%   { width: 20%; }
+      60%  { width: 80%; }
+      100% { width: 95%; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="scene"></div>
+
+<!-- Clouds -->
+<div class="clouds">
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+  <div class="cloud c4"></div>
+</div>
+
+<!-- Hills SVG -->
+<svg class="hills" viewBox="0 0 1440 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Far hills -->
+  <path d="M0,160 C120,100 240,130 360,110 C480,90 560,50 720,80 C880,110 960,90 1080,70 C1200,50 1320,110 1440,90 L1440,320 L0,320Z"
+        fill="#7AAF65" opacity="0.6"/>
+  <!-- Mid hills -->
+  <path d="M0,210 C160,160 280,185 440,165 C600,145 680,120 840,150 C1000,180 1100,150 1240,165 C1360,178 1400,170 1440,165 L1440,320 L0,320Z"
+        fill="#4F8C42" opacity="0.8"/>
+  <!-- Near forest floor -->
+  <path d="M0,265 C80,245 160,260 240,252 C320,244 400,240 500,255 C600,270 680,258 780,260 C880,262 960,248 1060,255 C1160,262 1280,255 1380,260 L1440,262 L1440,320 L0,320Z"
+        fill="#2A5C2E"/>
+  <!-- Tree silhouettes left -->
+  <g fill="#1C3E20">
+    <polygon points="0,280 18,210 36,280"/>
+    <polygon points="28,285 50,200 72,285"/>
+    <polygon points="60,282 80,215 100,282"/>
+    <polygon points="12,290 28,240 44,290"/>
+    <polygon points="90,288 108,225 126,288"/>
+  </g>
+  <!-- Tree silhouettes right -->
+  <g fill="#1C3E20">
+    <polygon points="1314,280 1332,210 1350,280"/>
+    <polygon points="1340,285 1362,200 1384,285"/>
+    <polygon points="1370,282 1390,215 1410,282"/>
+    <polygon points="1395,290 1415,240 1435,290"/>
+    <polygon points="1295,288 1313,225 1331,288"/>
+  </g>
+  <!-- Grass texture bumps -->
+  <path d="M100,320 Q120,308 140,320 Q160,308 180,320" fill="#3A7032" stroke="none"/>
+  <path d="M300,320 Q318,310 336,320 Q354,310 372,320" fill="#3A7032" stroke="none"/>
+  <path d="M600,320 Q618,312 636,320 Q654,312 672,320" fill="#3A7032" stroke="none"/>
+  <path d="M900,320 Q918,310 936,320 Q954,310 972,320" fill="#3A7032" stroke="none"/>
+  <path d="M1200,320 Q1218,308 1236,320 Q1254,308 1272,320" fill="#3A7032" stroke="none"/>
+</svg>
+
+<!-- Fireflies -->
+<div class="firefly" style="left:8%;  top:62%; animation-delay:-0.5s; animation-duration:4.8s"></div>
+<div class="firefly" style="left:87%; top:68%; animation-delay:-2.2s; animation-duration:6.2s"></div>
+<div class="firefly" style="left:12%; top:72%; animation-delay:-3.8s; animation-duration:5.5s"></div>
+<div class="firefly" style="left:92%; top:58%; animation-delay:-1.1s; animation-duration:7.0s"></div>
+<div class="firefly" style="left:5%;  top:78%; animation-delay:-4.5s; animation-duration:4.2s"></div>
+<div class="firefly" style="left:95%; top:74%; animation-delay:-0.8s; animation-duration:5.8s"></div>
+<div class="firefly" style="left:50%; top:80%; animation-delay:-2.8s; animation-duration:6.5s"></div>
+
+<!-- Totoro decoration -->
+<svg class="totoro-deco" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="50" cy="80" rx="38" ry="45" fill="#1A3D1C"/>
+  <ellipse cx="50" cy="42" rx="28" ry="30" fill="#1A3D1C"/>
+  <ellipse cx="36" cy="28" rx="8" ry="14" fill="#1A3D1C" transform="rotate(-15 36 28)"/>
+  <ellipse cx="64" cy="28" rx="8" ry="14" fill="#1A3D1C" transform="rotate(15 64 28)"/>
+  <circle cx="42" cy="40" r="5" fill="#fff"/>
+  <circle cx="58" cy="40" r="5" fill="#fff"/>
+  <circle cx="43" cy="41" r="2.5" fill="#1A3D1C"/>
+  <circle cx="59" cy="41" r="2.5" fill="#1A3D1C"/>
+  <ellipse cx="50" cy="75" rx="22" ry="18" fill="rgba(255,255,255,0.06)"/>
+</svg>
+
+<!-- ───────── Player ───────── -->
+<div class="player-wrap">
+  <div class="player-title">🌿 宫崎骏风格播放器 &nbsp;·&nbsp; Ghibli Player 🌿</div>
+
+  <div class="frame">
+    <!-- Video -->
+    <div class="video-box" id="videoBox">
+      <video id="vid" preload="metadata"></video>
+
+      <div class="drop-overlay" id="overlay">
+        <div class="drop-icon">🍃</div>
+        <div class="drop-main">拖入视频文件，或点此选择</div>
+        <div class="drop-sub">支持 MP4 · WebM · MKV · MOV 等格式</div>
+      </div>
+    </div>
+
+    <!-- URL loader -->
+    <div class="url-row">
+      <input class="url-input" id="urlInput" type="text" placeholder="粘贴视频链接 (http://…)  按 Enter 播放">
+      <button class="url-go btn" id="urlGo">播放</button>
+    </div>
+    <div class="loading-bar" id="loadBar"></div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <!-- Progress -->
+      <div class="progress-row">
+        <div class="prog-track" id="progTrack">
+          <div class="prog-fill" id="progFill">
+            <div class="prog-thumb"></div>
+          </div>
+        </div>
+        <div class="time-label" id="timeLabel">0:00 / 0:00</div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="btn-row">
+        <button class="btn btn-play" id="playBtn" title="播放/暂停 (空格)">▶</button>
+        <button class="btn" id="rwBtn"  title="后退10秒 (←)">
+          <span class="skip-label">⟨10</span>
+        </button>
+        <button class="btn" id="ffBtn"  title="前进10秒 (→)">
+          <span class="skip-label">10⟩</span>
+        </button>
+
+        <div class="vol-wrap">
+          <button class="btn" id="muteBtn" title="静音 (M)">🔊</button>
+          <input class="vol-slider" id="volSlider" type="range" min="0" max="1" step="0.02" value="1">
+        </div>
+
+        <div class="spacer"></div>
+
+        <select class="speed-select" id="speedSel" title="播放速度">
+          <option value="0.5">0.5×</option>
+          <option value="0.75">0.75×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.25">1.25×</option>
+          <option value="1.5">1.5×</option>
+          <option value="2">2×</option>
+        </select>
+
+        <button class="btn file-btn" id="openBtn" title="打开本地文件">📂 打开</button>
+        <button class="btn fs-btn" id="fsBtn" title="全屏 (F)">⛶</button>
+      </div>
+
+      <div class="kbd-hint">空格: 播放/暂停 &nbsp;·&nbsp; ← →: 快退/快进 &nbsp;·&nbsp; ↑ ↓: 音量 &nbsp;·&nbsp; M: 静音 &nbsp;·&nbsp; F: 全屏</div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="video/*,audio/*" style="display:none">
+
+<script>
+  const vid       = document.getElementById('vid');
+  const overlay   = document.getElementById('overlay');
+  const playBtn   = document.getElementById('playBtn');
+  const progTrack = document.getElementById('progTrack');
+  const progFill  = document.getElementById('progFill');
+  const timeLabel = document.getElementById('timeLabel');
+  const volSlider = document.getElementById('volSlider');
+  const muteBtn   = document.getElementById('muteBtn');
+  const speedSel  = document.getElementById('speedSel');
+  const fileInput = document.getElementById('fileInput');
+  const urlInput  = document.getElementById('urlInput');
+  const loadBar   = document.getElementById('loadBar');
+  const videoBox  = document.getElementById('videoBox');
+
+  // ── Helpers ──
+  function fmt(t) {
+    if (!t || isNaN(t)) return '0:00';
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
+    const s = String(Math.floor(t % 60)).padStart(2, '0');
+    return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${s}` : `${m}:${s}`;
+  }
+
+  function setVolIcon() {
+    if (vid.muted || vid.volume === 0) muteBtn.textContent = '🔇';
+    else if (vid.volume < 0.4)         muteBtn.textContent = '🔈';
+    else if (vid.volume < 0.75)        muteBtn.textContent = '🔉';
+    else                               muteBtn.textContent = '🔊';
+  }
+
+  function loadSrc(src) {
+    vid.src = src;
+    overlay.classList.add('hidden');
+    loadBar.classList.add('active');
+    vid.play().catch(() => {});
+  }
+
+  // ── File loading ──
+  fileInput.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) loadSrc(URL.createObjectURL(f));
+    fileInput.value = '';
+  });
+  document.getElementById('openBtn').addEventListener('click', () => fileInput.click());
+
+  // ── URL loading ──
+  function goUrl() {
+    const u = urlInput.value.trim();
+    if (u) { loadSrc(u); urlInput.blur(); }
+  }
+  document.getElementById('urlGo').addEventListener('click', goUrl);
+  urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') goUrl(); });
+
+  // ── Drag & drop ──
+  videoBox.addEventListener('dragover', e => {
+    e.preventDefault();
+    overlay.classList.add('drag-over');
+  });
+  videoBox.addEventListener('dragleave', () => overlay.classList.remove('drag-over'));
+  videoBox.addEventListener('drop', e => {
+    e.preventDefault();
+    overlay.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && (f.type.startsWith('video/') || f.type.startsWith('audio/')))
+      loadSrc(URL.createObjectURL(f));
+  });
+  overlay.addEventListener('click', () => fileInput.click());
+
+  // ── Playback ──
+  playBtn.addEventListener('click', () => vid.paused ? vid.play() : vid.pause());
+  vid.addEventListener('click', () => vid.paused ? vid.play() : vid.pause());
+  vid.addEventListener('dblclick', () => document.getElementById('fsBtn').click());
+  vid.addEventListener('play',  () => { playBtn.textContent = '⏸'; });
+  vid.addEventListener('pause', () => { playBtn.textContent = '▶'; });
+  vid.addEventListener('canplay', () => { loadBar.classList.remove('active'); loadBar.style.width = '100%'; });
+  vid.addEventListener('waiting', () => loadBar.classList.add('active'));
+
+  // ── Progress ──
+  vid.addEventListener('timeupdate', () => {
+    if (!vid.duration) return;
+    const pct = (vid.currentTime / vid.duration) * 100;
+    progFill.style.width = pct + '%';
+    timeLabel.textContent = `${fmt(vid.currentTime)} / ${fmt(vid.duration)}`;
+  });
+
+  let seeking = false;
+  function seekTo(e) {
+    const rect = progTrack.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    vid.currentTime = ratio * (vid.duration || 0);
+  }
+  progTrack.addEventListener('mousedown', e => { seeking = true; seekTo(e); });
+  document.addEventListener('mousemove',  e => { if (seeking) seekTo(e); });
+  document.addEventListener('mouseup',    () => { seeking = false; });
+
+  // ── Volume ──
+  volSlider.addEventListener('input', () => {
+    vid.volume = parseFloat(volSlider.value);
+    vid.muted = false;
+    setVolIcon();
+  });
+  muteBtn.addEventListener('click', () => { vid.muted = !vid.muted; setVolIcon(); });
+
+  // ── Skip ──
+  document.getElementById('rwBtn').addEventListener('click', () => vid.currentTime -= 10);
+  document.getElementById('ffBtn').addEventListener('click', () => vid.currentTime += 10);
+
+  // ── Speed ──
+  speedSel.addEventListener('change', () => { vid.playbackRate = parseFloat(speedSel.value); });
+
+  // ── Fullscreen ──
+  document.getElementById('fsBtn').addEventListener('click', () => {
+    if (!document.fullscreenElement) videoBox.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  });
+
+  // ── Keyboard shortcuts ──
+  document.addEventListener('keydown', e => {
+    if (document.activeElement === urlInput) return;
+    switch (e.key) {
+      case ' ':         e.preventDefault(); vid.paused ? vid.play() : vid.pause(); break;
+      case 'ArrowLeft': e.preventDefault(); vid.currentTime -= 5; break;
+      case 'ArrowRight':e.preventDefault(); vid.currentTime += 5; break;
+      case 'ArrowUp':   e.preventDefault(); vid.volume = Math.min(1, vid.volume + 0.1); volSlider.value = vid.volume; setVolIcon(); break;
+      case 'ArrowDown': e.preventDefault(); vid.volume = Math.max(0, vid.volume - 0.1); volSlider.value = vid.volume; setVolIcon(); break;
+      case 'f': case 'F': document.getElementById('fsBtn').click(); break;
+      case 'm': case 'M': muteBtn.click(); break;
+    }
+  });
+</script>
+</body>
+</html>
