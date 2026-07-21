@@ -22,6 +22,15 @@ const FORMAT_COLORS = {
 };
 function badgeColor(fmt) { return FORMAT_COLORS[fmt.toUpperCase()] || '#3F7A35'; }
 
+function escHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function fmtSize(bytes) {
   if (!bytes || bytes <= 0) return '';
@@ -78,11 +87,18 @@ async function loadVideos() {
     if (!tab) throw new Error('no active tab');
     currentTabId = tab.id;
 
-    // 1. Ask content script (DOM + XHR/Fetch intercepts)
+    // activeTab grants temporary access only after the user opens the popup.
+    // Inject on demand instead of running a persistent script on every website.
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content.js'],
+    }).catch(() => {});
+
+    // 1. Ask the on-demand scanner for DOM-visible media.
     const csResult = await chrome.tabs.sendMessage(tab.id, { type: 'GET_VIDEOS' })
       .catch(() => ({ videos: [] }));
 
-    // 2. Ask background service worker (network monitoring)
+    // 2. Merge any URLs reported by the scanner during this tab session.
     const bgResult = await chrome.runtime.sendMessage({ type: 'GET_TAB_VIDEOS', tabId: tab.id })
       .catch(() => ({ videos: [] }));
 
@@ -129,12 +145,12 @@ function render(videos) {
       return `
         <div class="video-card">
           <div class="card-top">
-            <span class="format-badge" style="background:${badgeColor(fmt)}">${fmt}</span>
+            <span class="format-badge" style="background:${badgeColor(fmt)}">${escHtml(fmt)}</span>
             <span class="stream-tag">流媒体</span>
-            ${sizeStr ? `<span class="size-label">${sizeStr}</span>` : ''}
+            ${sizeStr ? `<span class="size-label">${escHtml(sizeStr)}</span>` : ''}
           </div>
-          <div class="card-url" title="${v.url}">${truncUrl(v.url)}</div>
-          <div class="card-source">来源: ${sourceStr}</div>
+          <div class="card-url" title="${escHtml(v.url)}">${escHtml(truncUrl(v.url))}</div>
+          <div class="card-source">来源: ${escHtml(sourceStr)}</div>
           <div class="card-actions">
             <button class="btn-dl stream-dl" data-i="${i}" data-action="copy">📋 复制链接</button>
             <button class="btn-open" data-i="${i}" data-action="open">↗ 在新标签打开</button>
@@ -146,11 +162,11 @@ function render(videos) {
     return `
       <div class="video-card">
         <div class="card-top">
-          <span class="format-badge" style="background:${badgeColor(fmt)}">${fmt}</span>
-          ${sizeStr ? `<span class="size-label">${sizeStr}</span>` : ''}
+          <span class="format-badge" style="background:${badgeColor(fmt)}">${escHtml(fmt)}</span>
+          ${sizeStr ? `<span class="size-label">${escHtml(sizeStr)}</span>` : ''}
         </div>
-        <div class="card-url" title="${v.url}">${truncUrl(v.url)}</div>
-        <div class="card-source">来源: ${sourceStr}</div>
+        <div class="card-url" title="${escHtml(v.url)}">${escHtml(truncUrl(v.url))}</div>
+        <div class="card-source">来源: ${escHtml(sourceStr)}</div>
         <div class="card-actions">
           <button class="btn-dl" data-i="${i}" data-action="download">⬇ 下载</button>
           <button class="btn-copy" data-i="${i}" data-action="copy">📋 复制</button>
