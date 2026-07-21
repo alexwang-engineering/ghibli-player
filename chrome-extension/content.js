@@ -6,6 +6,9 @@
 (function () {
   'use strict';
 
+  if (window.__ghibliPlayerScannerLoaded) return;
+  window.__ghibliPlayerScannerLoaded = true;
+
   // ── Constants ──────────────────────────────────────────────────────────────
   const VIDEO_EXT_RE = /\.(mp4|webm|ogg|ogv|mpeg|mpg|mov|avi|mkv|flv|f4v|m3u8|mpd|ts|m4v|3gp|wmv|hevc|h264|h265)(\?[^#]*)?(?:#.*)?$/i;
   const HLS_RE       = /\.(m3u8)/i;
