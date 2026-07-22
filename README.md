@@ -1,11 +1,18 @@
 # GhibliPlayer
 
+![Status: Experimental](https://img.shields.io/badge/status-experimental-orange.svg)
 [![CI](https://github.com/alexwang-engineering/ghibli-player/actions/workflows/ci.yml/badge.svg)](https://github.com/alexwang-engineering/ghibli-player/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 > 🚧 **Work in progress** — under active development, not feature-complete. Feedback and review welcome via the open draft PR.
 
 A Ghibli-themed macOS video player app with real-photo character companions, plus a companion Chrome extension for detecting and downloading video sources.
+
+> ⚠️ **Responsible use only.** The downloader is for inspecting and downloading
+> media you own or have permission to access. Respect each site's terms and
+> applicable copyright law. Studio Ghibli names, characters and third-party
+> artwork belong to their respective owners — no affiliation or endorsement is
+> claimed, and character assets must not be redistributed without permission.
 
 ## Technical highlights
 
@@ -18,15 +25,12 @@ A Ghibli-themed macOS video player app with real-photo character companions, plu
 
 ## Responsible-use boundary
 
-This is an educational work in progress. Only inspect or download media you own
-or have permission to access, and follow the website's terms and applicable
-copyright law. Studio Ghibli names, characters and third-party artwork remain
-the property of their respective owners; no affiliation or endorsement is
-claimed. Do not redistribute third-party character assets without permission.
-
-The extension intentionally avoids `<all_urls>` and passive `webRequest`
-monitoring. Its reduced permission model trades some early network-request
-coverage for a clearer privacy boundary.
+Beyond the usage rules called out at the top, the extension is built to a
+deliberately narrow privacy boundary: it intentionally avoids `<all_urls>` and
+passive `webRequest` monitoring. Its reduced permission model trades some early
+network-request coverage for a clearer privacy story — scanning only runs after
+you open the popup, under Chrome's temporary `activeTab` grant. This remains an
+educational work in progress.
 
 ## Structure
 
@@ -80,3 +84,7 @@ and pull request.
 ## Characters
 
 Six characters (Totoro, No-Face, Calcifer, Jiji, Kodama, Catbus) sourced from real photos/fan art and processed with flood-fill background removal, then embedded into the player UI.
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE).
