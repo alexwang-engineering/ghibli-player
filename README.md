@@ -1,5 +1,8 @@
 # GhibliPlayer
 
+[![CI](https://github.com/alexwang-engineering/ghibli-player/actions/workflows/ci.yml/badge.svg)](https://github.com/alexwang-engineering/ghibli-player/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 > 🚧 **Work in progress** — under active development, not feature-complete. Feedback and review welcome via the open draft PR.
 
 A Ghibli-themed macOS video player app with real-photo character companions, plus a companion Chrome extension for detecting and downloading video sources.
