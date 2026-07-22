@@ -31,11 +31,37 @@ coverage for a clearer privacy boundary.
 - `chrome-extension/` — Chrome MV3 extension (`ghibli-downloader`) used alongside the player for video detection/download.
 - `index.html` — a standalone template version of the player UI.
 
-## Characters
+## Getting started
 
-Six characters (Totoro, No-Face, Calcifer, Jiji, Kodama, Catbus) sourced from real photos/fan art and processed with flood-fill background removal, then embedded into the player UI.
+Requirements: macOS with Google Chrome installed (the app opens the bundled UI
+through Chrome's `--app=` window mode). No build step or package manager is
+needed — the player is a self-contained `.app` bundle.
 
-## Verify
+### Run the player
+
+- **Packaged app:** double-click `GhibliPlayer.app`, or from a terminal:
+
+  ```bash
+  open GhibliPlayer.app
+  ```
+
+- **Standalone UI (no app wrapper):** open `index.html` directly in a browser to
+  preview the same player interface.
+
+### Load the Chrome extension
+
+The companion downloader is an unpacked Manifest V3 extension:
+
+1. Open `chrome://extensions` in Chrome.
+2. Enable **Developer mode** (top-right toggle).
+3. Click **Load unpacked** and select the `chrome-extension/` folder.
+4. Pin **ghibli-downloader** to the toolbar. It requests no host access up
+   front — clicking the popup grants a temporary `activeTab` scan of the current
+   page only.
+
+### Verify
+
+Validate the extension manifest and script syntax before loading:
 
 ```bash
 node -e "JSON.parse(require('fs').readFileSync('chrome-extension/manifest.json'))"
@@ -47,3 +73,7 @@ node --check chrome-extension/popup.js
 
 GitHub Actions runs the same manifest and JavaScript syntax checks on every push
 and pull request.
+
+## Characters
+
+Six characters (Totoro, No-Face, Calcifer, Jiji, Kodama, Catbus) sourced from real photos/fan art and processed with flood-fill background removal, then embedded into the player UI.
