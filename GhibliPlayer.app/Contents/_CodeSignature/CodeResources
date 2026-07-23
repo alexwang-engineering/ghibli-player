@@ -8,6 +8,10 @@
 		<data>
 		uBhe0XjnXBA4XMTS5u4qKsmyZM4=
 		</data>
+		<key>Resources/GhibliPlayer.icns</key>
+		<data>
+		zEGpDRhC8tZcYOlC1XdpMsChOsU=
+		</data>
 		<key>Resources/Scripts/main.scpt</key>
 		<data>
 		hwTQzDQruSWUj9F62H05Yg4PnP0=
@@ -19,6 +23,10 @@
 		<key>Resources/applet.rsrc</key>
 		<data>
 		ar5xmDs9mPpaINVXiVlVqUCB8ao=
+		</data>
+		<key>Resources/index.html</key>
+		<data>
+		8ztWa5WTHddw6IP4XK5ahdhCg6I=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -32,6 +40,17 @@
 			<key>hash2</key>
 			<data>
 			S/k6TV+XN+bgfA6DzUHnZAsF7xUhwE8Ag9JpyS1R9wo=
+			</data>
+		</dict>
+		<key>Resources/GhibliPlayer.icns</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			zEGpDRhC8tZcYOlC1XdpMsChOsU=
+			</data>
+			<key>hash2</key>
+			<data>
+			nGndI9hytQ2p1ANFrI3m9CmZ6lbdA5v0Aru6C3Dj+mY=
 			</data>
 		</dict>
 		<key>Resources/Scripts/main.scpt</key>
@@ -65,6 +84,17 @@
 			<key>hash2</key>
 			<data>
 			NV2dNLwgykV7aWfTBywUILBA9Lidl7F51PrkQw77SbM=
+			</data>
+		</dict>
+		<key>Resources/index.html</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			8ztWa5WTHddw6IP4XK5ahdhCg6I=
+			</data>
+			<key>hash2</key>
+			<data>
+			MhL4AcqEcT6mhzzyh51Q9nT3fRExgT8SvajHQHva1EA=
 			</data>
 		</dict>
 	</dict>
